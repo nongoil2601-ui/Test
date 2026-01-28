@@ -7,4 +7,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check if Company exists
-        run: grep "Company","Co" profile.txt
+        run: |
+          grep "Company" profile.txt
+          grep "Co" profile.txt
