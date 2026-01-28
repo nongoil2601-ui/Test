@@ -1,11 +1,11 @@
-name: Auto Create Pull Request
+name: Auto Create Pull Request and Merge PR
 on:
   push:
     branches:
       - 'oil'
   
 jobs:
-  create-pull-request:
+  create-and-merge:
     runs-on: ubuntu-latest
     permissions: 
       contents: write
@@ -14,12 +14,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ขั้นตอนที่ 1: สร้าง PR (เหมือนเดิม แต่เพิ่ม id เพื่อเอาเลข PR ไปใช้ต่อ)
       - name: Create Pull Request
+        id: cpr_step   # <--- ต้องมี ID เพื่อใช้อ้างอิงตอน Merge
         uses: repo-sync/pull-request@v2
         with:
           source_branch: "oil"
           destination_branch: "main"
           pr_title: "PR: รวมงานจากเครื่องของคุณ"
-          pr_body: "สร้างอัตโนมัติจาก GitHub Action"
+          pr_body: "สร้างและรวมร่างอัตโนมัติโดย GitHub Action"
           github_token: ${{ secrets.GITHUB_TOKEN }}
-  
+
+      # ขั้นตอนที่ 2: สั่ง Merge ทันที (นี่คือส่วนที่เพิ่มเข้ามา)
+      - name: Merge Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # ใช้รหัสผ่านของระบบ
+        run: |
+          echo "กำลังทำการ Merge PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }}..."
+          # ใช้คำสั่ง gh (GitHub CLI) เพื่อทำการ Merge เข้ากิ่ง main
+          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto
