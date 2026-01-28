@@ -24,24 +24,3 @@ jobs:
 
       - name: 4. โชว์ผลลัพธ์หน้าจอ
         run: cat result.txt
-
-    summary-job:
-    needs: verify-job
-    runs-on: ubuntu-latest        run: |
-          WORDS=$(wc -w < profile.txt)
-          CHARS=$(wc -m < profile.txt)
-          
-          echo "รายงานผลการตรวจสอบ:" > result.txt
-          echo "- จำนวนคำทั้งหมด: $WORDS คำ" >> result.txt
-          echo "- จำนวนตัวอักษร: $CHARS ตัว
-    steps:
-      - name: 1. ดึงโค้ดมาใหม่ (เพราะเป็นหุ่นยนต์เครื่องใหม่)
-        uses: actions/checkout@v4   # <--- ต้องมีบรรทัดนี้!
-
-      - name" >> result.txt
-          echo "- ตรวจเสร็จเมื่อ: $(date)" >> result.txt
-
-      : 2. นับจำนวนคำและตัวอักษร
-        run: |
-          WORDS=$(wc -w- name: 4. โชว์ผลลัพธ์หน้าจอ
-        run: cat result.txt
