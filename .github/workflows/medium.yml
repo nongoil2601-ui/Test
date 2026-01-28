@@ -25,6 +25,13 @@ jobs:
       - name: 4. โชว์ผลลัพธ์หน้าจอ
         run: cat result.txt
 
+  summary-job:
+    needs: verify-job
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. ดึงโค้ดมาอีกรอบ
+        uses: actions/checkout@v4
+
       - name: 2. นับจำนวนคำและตัวอักษร
         run: |
           # wc -w คือนับคำ (Word Count)
