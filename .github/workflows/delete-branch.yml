@@ -8,13 +8,15 @@ jobs:
   delete-branch:
     runs-on: ubuntu-latest
 
-    # ทำเฉพาะตอน merge สำเร็จ
     if: github.event.pull_request.merged == true
 
     permissions:
       contents: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Delete merged branch
         run: |
           BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
@@ -22,5 +24,4 @@ jobs:
           echo "ตรวจพบว่า PR ถูก merge แล้ว"
           echo "กำลังลบกิ่ง: $BRANCH_NAME"
 
-          # ลบ branch บน GitHub (remote)
           git push origin --delete "$BRANCH_NAME"
