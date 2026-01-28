@@ -1,0 +1,31 @@
+name: Cleanup - Delete Branch After Merge
+
+# 1. ทำงานเมื่อไหร่?
+on:
+  pull_request:
+    types: [closed] # ทำงานเมื่อ PR ถูก "ปิด" ลง (ไม่ว่าจะ Merge สำเร็จหรือกดยกเลิก)
+
+jobs:
+  delete-branch:
+    runs-on: ubuntu-latest
+    
+    # 2. เงื่อนไขความปลอดภัย
+    # ทำก็ต่อเมื่อ "Merge สำเร็จแล้ว" เท่านั้น (ถ้ากด Close ทิ้งเฉยๆ ไม่ต้องลบ)
+    if: github.event.pull_request.merged == true
+    
+    permissions:
+      contents: write # ขอสิทธิ์ในการแก้ไข/ลบกิ่ง
+
+    steps:
+      - name: Delete branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # ดึงชื่อกิ่งที่ส่งมา (เช่น test)
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          
+          echo "ตรวจพบว่า PR ถูก Merge แล้ว..."
+          echo "กำลังลบกิ่ง: $BRANCH_NAME ทิ้งเพื่อความสะอาด"
+          
+          # สั่งลบกิ่งผ่าน GitHub API
+          gh api --method DELETE /repos/${{ github.repository }}/git/refs/heads/$BRANCH_NAME || echo "กิ่งอาจจะถูกลบไปแล้ว หรือหาไม่เจอ"
