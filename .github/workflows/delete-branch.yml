@@ -23,4 +23,4 @@ jobs:
           echo "กำลังลบกิ่ง: $BRANCH_NAME"
 
           # ลบ branch บน GitHub (remote)
-          git push origin --delete "$BRANCH_NAME"
+          git push origin --delete res
