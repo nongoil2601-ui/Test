@@ -1,0 +1,17 @@
+name : First Workflow
+
+on:
+  push:
+    branches:
+      - oil
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Say Hello
+        run: echo "Hello, Github Actions! form ${{ github.repository }}"

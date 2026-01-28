@@ -1,0 +1,26 @@
+name: Medium Level Pipeline
+on: [push]
+
+jobs:
+  # งานที่ 1: ตรวจความถูกต้องของไฟล์ (Verify)
+  verify-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. ดึงโค้ดจาก GitHub
+        uses: actions/checkout@v4
+
+      - name: 2. ตรวจหาคำว่า Company
+        # ถ้าหาคำนี้ไม่เจอ หุ่นยนต์จะหยุดทันที งานที่ 2 จะไม่ถูกทำ
+        run: grep "Company" profile.txt
+
+  # งานที่ 2: สรุปผลการตรวจ (Summary)
+  summary-job:
+    needs: verify-job          # <--- หัวใจของเลเวลกลาง: สั่งให้รอ verify-job ก่อน
+    runs-on: ubuntu-latest
+    steps:
+      - name: 3. เขียนบันทึกสรุป
+        # ขั้นตอนนี้จะเกิดขึ้นได้ แปลว่าขั้นตอนที่ 2 (grep) ต้องผ่านแล้วเท่านั้น
+        run: echo "หุ่นยนต์ตรวจสอบไฟล์ profile.txt เรียบร้อยแล้วเมื่อวันที่ $(date)" > result.txt
+
+      - name: 4. โชว์ผลลัพธ์หน้าจอ
+        run: cat result.txt
