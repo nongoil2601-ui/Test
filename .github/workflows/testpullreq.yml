@@ -49,4 +49,4 @@ jobs:
         run: |
           echo "กำลังทำการ Merge PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }}..."
           # ใช้คำสั่ง gh (GitHub CLI) เพื่อทำการ Merge เข้ากิ่ง main
-          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto --delete-branch
+          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto
