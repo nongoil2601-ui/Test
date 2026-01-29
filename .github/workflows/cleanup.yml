@@ -1,0 +1,27 @@
+name: Delete source branch after PR merge
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup:
+    # ทำเฉพาะกรณี PR ถูก merge จริง
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Delete merged branch
+        run: |
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          echo "🗑️ Deleting branch: $BRANCH"
+
+          # กันพลาด: ห้ามลบ main
+          if [ "$BRANCH" = "main" ]; then
+            echo "❌ Refuse to delete main branch"
+            exit 0
+          fi
+
+          git push origin --delete "$BRANCH"
