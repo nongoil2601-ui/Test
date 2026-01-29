@@ -4,7 +4,8 @@ on:
     branches:
       - 'i'
       - 'oil'
-      - res
+      - 'res'
+      - 'l'
   
 jobs:
   create-and-merge:
