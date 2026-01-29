@@ -3,7 +3,8 @@ on:
   push:
     branches:
       - 'main'
-
+      - 'i'
+      - 'oil'
   
 jobs:
   create-and-merge:
