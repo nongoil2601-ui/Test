@@ -2,8 +2,8 @@ name: Auto Create Pull Request and Merge PR
 on:
   push:
     branches:
-      - 'i'
       - 'main'
+
   
 jobs:
   create-and-merge:
