@@ -2,7 +2,6 @@ name: Auto Create Pull Request and Merge PR
 on:
   push:
     branches:
-      - 'main'
       - 'i'
       - 'oil'
   
@@ -21,7 +20,7 @@ jobs:
         id: cpr_step   # <--- ต้องมี ID เพื่อใช้อ้างอิงตอน Merge
         uses: repo-sync/pull-request@v2
         with:
-          source_branch: "i"
+          source_branch: ${{ github.ref_name }}   # ⭐ สำคัญที่สุด
           destination_branch: "main"
           pr_title: "PR: รวมงานจากเครื่องของคุณ"
           pr_body: "สร้างและรวมร่างอัตโนมัติโดย GitHub Action"
