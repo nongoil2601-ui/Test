@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 'i'
+      - 'main'
   
 jobs:
   create-and-merge:
