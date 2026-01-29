@@ -1,27 +1,27 @@
-name: Delete source branch after PR merge
+name: Delete branch manually
 
 on:
-  pull_request:
-    types: [closed]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch name to delete'
+        required: true
 
 jobs:
-  cleanup:
-    # ทำเฉพาะกรณี PR ถูก merge จริง
-    if: github.event.pull_request.merged == true
+  delete-branch:
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Delete merged branch
+      - name: Delete selected branch
         run: |
-          BRANCH="${{ github.event.pull_request.head.ref }}"
+          BRANCH="${{ github.event.inputs.branch }}"
           echo "🗑️ Deleting branch: $BRANCH"
 
-          # กันพลาด: ห้ามลบ main
           if [ "$BRANCH" = "main" ]; then
             echo "❌ Refuse to delete main branch"
-            exit 0
+            exit 1
           fi
 
           git push origin --delete "$BRANCH"
