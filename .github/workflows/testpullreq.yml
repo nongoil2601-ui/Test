@@ -26,6 +26,7 @@ jobs:
           pr_title: "PR: รวมงานจากเครื่องของคุณ"
           pr_body: "สร้างและรวมร่างอัตโนมัติโดย GitHub Action"
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_allow_empty: false
 
       # ขั้นตอนตรวจสอบ: เช็คว่ามีของใหม่ไหม?
       - name: Check for changes
