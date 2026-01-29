@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 't'
+      - 'oil'
   
 jobs:
   create-pull-request:
