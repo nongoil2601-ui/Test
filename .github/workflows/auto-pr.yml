@@ -1,0 +1,37 @@
+name: Auto PR + Merge
+
+on:
+  push:
+    branches:
+      - i
+      - oil
+      - res
+      - l
+
+jobs:
+  auto-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Pull Request
+        id: pr
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: ${{ github.ref_name }}
+          destination_branch: main
+          pr_title: "Auto merge from ${{ github.ref_name }}"
+          pr_body: "Created automatically"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_allow_empty: false
+
+      - name: Merge PR
+        if: steps.pr.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge ${{ steps.pr.outputs.pr_number }} --merge --delete-branch
