@@ -1,0 +1,19 @@
+name: Cleanup branch after Auto PR and Merge
+
+on:
+  workflow_run:
+    workflows: ["Auto PR and Merge"]
+    types:
+      - completed
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Delete branch test
+        run: |
+          echo "🗑️ Deleting branch test"
+          git push origin --delete test || echo "branch already deleted"
