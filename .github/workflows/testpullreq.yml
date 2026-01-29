@@ -4,6 +4,7 @@ on:
     branches:
       - 't'
       - 'oil'
+      - 'k'
   
 jobs:
   create-pull-request:
