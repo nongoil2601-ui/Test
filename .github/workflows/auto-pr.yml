@@ -1,37 +1,44 @@
-name: Auto PR + Merge
-
+name: Auto Create Pull Request and Merge PR
 on:
   push:
     branches:
-      - i
-      - oil
-      - res
-      - l
-
+      - 'i'
+      - 'oil'
+      - 'res'
+  
 jobs:
-  auto-pr:
+  create-and-merge:
     runs-on: ubuntu-latest
-    permissions:
+    permissions: 
       contents: write
       pull-requests: write
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      # ขั้นตอนที่ 1: สร้าง PR
       - name: Create Pull Request
-        id: cpr
+        id: cpr_step
         uses: repo-sync/pull-request@v2
         with:
           source_branch: ${{ github.ref_name }}
-          destination_branch: main
-          pr_title: "Auto PR from ${{ github.ref_name }}"
-          pr_body: "สร้างอัตโนมัติ"
+          destination_branch: "main"
+          pr_title: "PR: รวมงานจากกิ่ง ${{ github.ref_name }}"
+          pr_body: "สร้างและรวมร่างอัตโนมัติโดย GitHub Action"
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          pr_allow_empty: false
+          pr_allow_empty: false 
+          # pr_allow_empty: false คือ ถ้าไม่มีไฟล์แก้ ก็ไม่ต้องสร้าง PR
 
-      - name: Merge PR
-        if: ${{ steps.cpr.outputs.pr_number }}
+      # ขั้นตอนที่ 2: สั่ง Merge และลบกิ่ง (รวมในขั้นตอนเดียว)
+      - name: Merge and Delete Branch
+        # ทำเฉพาะตอนที่มีเลข PR ส่งมาเท่านั้น
+        if: ${{ steps.cpr_step.outputs.pr_number }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr merge ${{ steps.cpr.outputs.pr_number }} --merge --auto --delete-branch
+          echo "🚀 กำลัง Merge PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }}..."
+          
+          # สั่ง Merge และ ลบกิ่งทิ้ง (--delete-branch) ในคำสั่งเดียว
+          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto --delete-branch
+          
+          echo "✅ Merge และลบกิ่ง ${{ github.ref_name }} บน GitHub เรียบร้อยแล้ว"
