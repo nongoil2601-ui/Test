@@ -2,7 +2,7 @@ name: Auto Create Pull Request and Merge PR
 on:
   push:
     branches:
-      - 'o'
+      - 'oil'
   
 jobs:
   create-and-merge:
@@ -19,11 +19,12 @@ jobs:
         id: cpr_step   # <--- ต้องมี ID เพื่อใช้อ้างอิงตอน Merge
         uses: repo-sync/pull-request@v2
         with:
-          source_branch: "o"
+          source_branch: "oil"
           destination_branch: "main"
           pr_title: "PR: รวมงานจากเครื่องของคุณ"
           pr_body: "สร้างและรวมร่างอัตโนมัติโดย GitHub Action"
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_allow_empty: false   # 👈 เพิ่มบรรทัดนี้
 
       # ขั้นตอนตรวจสอบ: เช็คว่ามีของใหม่ไหม?
       - name: Check for changes
@@ -46,4 +47,4 @@ jobs:
         run: |
           echo "กำลังทำการ Merge PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }}..."
           # ใช้คำสั่ง gh (GitHub CLI) เพื่อทำการ Merge เข้ากิ่ง main
-          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto 
+          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto --delete-branch
