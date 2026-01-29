@@ -1,0 +1,27 @@
+name: Delete branch manually
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch name to delete'
+        required: true
+
+jobs:
+  delete-branch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Delete selected branch
+        run: |
+          BRANCH="${{ github.event.inputs.branch }}"
+          echo "🗑️ Deleting branch: $BRANCH"
+
+          if [ "$BRANCH" = "main" ]; then
+            echo "❌ Refuse to delete main branch"
+            exit 1
+          fi
+
+          git push origin --delete "$BRANCH"
