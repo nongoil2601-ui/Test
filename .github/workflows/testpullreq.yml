@@ -1,0 +1,49 @@
+name: Auto Create Pull Request and Merge PR
+on:
+  push:
+    branches:
+      - 'o'
+  
+jobs:
+  create-and-merge:
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ขั้นตอนที่ 1: สร้าง PR (เหมือนเดิม แต่เพิ่ม id เพื่อเอาเลข PR ไปใช้ต่อ)
+      - name: Create Pull Request
+        id: cpr_step   # <--- ต้องมี ID เพื่อใช้อ้างอิงตอน Merge
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: "o"
+          destination_branch: "main"
+          pr_title: "PR: รวมงานจากเครื่องของคุณ"
+          pr_body: "สร้างและรวมร่างอัตโนมัติโดย GitHub Action"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ขั้นตอนตรวจสอบ: เช็คว่ามีของใหม่ไหม?
+      - name: Check for changes
+        run: |
+          if [ -z "${{ steps.cpr_step.outputs.pr_number }}" ]; then
+            echo "⚠️ ไม่พบการเปลี่ยนแปลง (ไฟล์ซ้ำกัน)"
+            echo "จะไม่มีการ Merge เกิดขึ้น"
+          else
+            echo "✅ พบของใหม่! สร้าง PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }} แล้ว"
+          fi
+
+      # ขั้นตอนที่ 2: สั่ง Merge ทันที (นี่คือส่วนที่เพิ่มเข้ามา)
+      - name: Merge Pull Request
+        # บรรทัดนี้คือหัวใจสำคัญ! 
+        # "ถ้า steps.cpr_step มีเลข PR ส่งมา (แปลว่าไม่ซ้ำ) -> ให้ทำ"
+        # "ถ้าไม่มีเลขส่งมา (แปลว่าซ้ำ) -> ให้ข้ามขั้นตอนนี้ไปเลย"
+        if: ${{ steps.cpr_step.outputs.pr_number }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # ใช้รหัสผ่านของระบบ
+        run: |
+          echo "กำลังทำการ Merge PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }}..."
+          # ใช้คำสั่ง gh (GitHub CLI) เพื่อทำการ Merge เข้ากิ่ง main
+          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto --delete-branch
