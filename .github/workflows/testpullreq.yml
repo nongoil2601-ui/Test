@@ -46,4 +46,4 @@ jobs:
           echo "กำลังทำการ Merge PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }}..."
           
           # เพิ่ม --delete-branch ต่อท้าย เพื่อสั่งให้ลบกิ่ง oil บน GitHub ทิ้งเมื่อเสร็จงาน
-          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto --delete-branch
+          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --delete-branch
