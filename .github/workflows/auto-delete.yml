@@ -17,7 +17,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install gh -y
-          
+
       - name: "1. ตรวจสอบชื่อ branch ที่จะลบ"
         run: |
           TARGET="${{ github.event.pull_request.head.ref }}"
