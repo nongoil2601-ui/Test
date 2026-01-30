@@ -1,26 +1,18 @@
-name: Auto Create Pull Request
+name: Auto Create Pull Request and Merge
 on:
   push:
     branches-ignore:
-      - main
+      - main  # ทำงานทุกกิ่ง ยกเว้น main
   
 jobs:
-  create-pull-request:
+  create-and-merge:
     runs-on: ubuntu-latest
     permissions: 
       contents: write
       pull-requests: write
-      statuses: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install GitHub CLI
-        run: |
-          sudo apt update
-          sudo apt install gh -y
 
       # ขั้นตอนที่ 1: สร้าง PR
       - name: Create Pull Request
@@ -29,27 +21,31 @@ jobs:
         with:
           source_branch: ${{ github.ref_name }}
           destination_branch: "main"
-          pr_title: "PR: รวมงานจากเครื่องของคุณ"
-          pr_body: "สร้างและรวมร่างอัตโนมัติโดย GitHub Action"
-          github_token: ${{ secrets.GITHUB_TOKEN }}          
+          pr_title: "Auto-Merge: งานจากกิ่ง ${{ github.ref_name }}"
+          pr_body: "ระบบอัตโนมัติ: สร้าง PR, Merge และจะลบกิ่งทิ้งทันที"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_allow_empty: false 
 
-      # ขั้นตอนตรวจสอบ: เช็คว่ามีของใหม่ไหม?
-      - name: Check for changes
+      # ขั้นตอนตรวจสอบ: ถ้าไม่มีเลข PR (คือไฟล์ซ้ำกันเป๊ะ) ให้ข้าม
+      - name: Check output
         run: |
           if [ -z "${{ steps.cpr_step.outputs.pr_number }}" ]; then
-            echo "⚠️ ไม่พบการเปลี่ยนแปลง (ไฟล์ซ้ำกัน)"
-            echo "จะไม่มีการ Merge เกิดขึ้น"
+            echo "⚠️ ไม่พบความเปลี่ยนแปลง หรือ PR ถูกสร้างไปแล้ว"
           else
-            echo "✅ พบของใหม่! สร้าง PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }} แล้ว"
+            echo "✅ สร้าง PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }} สำเร็จ"
           fi
 
-      # ขั้นตอนที่ 2: สั่ง Merge และลบ Branch ทิ้งทันที 🗑️
-      - name: Merge Pull Request
+      # ขั้นตอนที่ 2: สั่ง Merge และลบกิ่งทันที
+      - name: Merge and Delete Branch
+        # ทำเฉพาะถ้ามีเลข PR ส่งมา
         if: ${{ steps.cpr_step.outputs.pr_number }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "กำลังทำการ Merge PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }}..."
+          echo "🚀 กำลัง Merge PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }}..."
           
-          # เพิ่ม --delete-branch ต่อท้าย เพื่อสั่งให้ลบกิ่ง oil บน GitHub ทิ้งเมื่อเสร็จงาน
-          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto --delete-branch
+          # ใช้ --merge (แบบ merge commit) และ --delete-branch (ลบกิ่ง)
+          # ตัด --auto ออกเพื่อให้สั่ง Merge ทันที
+          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --delete-branch
+          
+          echo "✅ เรียบร้อย! รวมงานเข้า Main และลบกิ่ง ${{ github.ref_name }} แล้ว"
