@@ -1,0 +1,27 @@
+name: Manual Delete Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "ชื่อ branch ที่ต้องการลบ (เช่น oil001)"
+        required: true
+
+jobs:
+  delete-branch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
+
+      - name: Delete branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🗑️ กำลังลบ branch: ${{ github.event.inputs.branch }}"
+          git push origin --delete ${{ github.event.inputs.branch }}
