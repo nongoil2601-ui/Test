@@ -1,0 +1,54 @@
+name: "Robot: Manual Delete (Enhanced)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'ระบุชื่อ Branch ที่ต้องการลบ'
+        required: true
+        type: string
+
+permissions:
+  contents: write # เพื่อให้บอทมีสิทธิ์ลบ
+
+jobs:
+  delete-branch-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "1. เริ่มกระบวนการตรวจสอบ"
+        run: |
+          echo "หุ่นยนต์ได้รับคำสั่งให้ลบกิ่ง: ${{ github.event.inputs.target_branch }}"
+          echo "สั่งโดย: ${{ github.actor }}"
+
+      - name: "2. ตรวจสอบความปลอดภัย (Safety Check)"
+        run: |
+          TARGET="${{ github.event.inputs.target_branch }}"
+          if [ "$TARGET" == "main" ] || [ "$TARGET" == "master" ] || [ "$TARGET" == "develop" ]; then
+            echo "❌ ปฏิเสธการทำงาน: ห้ามลบกิ่งหลัก ($TARGET) เด็ดขาด!"
+            exit 1
+          else
+            echo "✅ กิ่ง $TARGET ไม่ใช่กิ่งหลัก... ผ่าน!"
+          fi
+
+      - name: "3. เช็คว่ามีกิ่งนี้อยู่จริงหรือไม่บน GitHub"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TARGET="${{ github.event.inputs.target_branch }}"
+          
+          # ใช้ gh api ตรวจสอบตรงๆ ถ้าไม่เจอคำสั่งจะส่ง Error ออกมาเองอัตโนมัติ
+          if gh api "repos/${{ github.repository }}/branches/$TARGET" --silent; then
+            echo "✅ พบกิ่ง '$TARGET' พร้อมดำเนินการต่อ..."
+          else
+            echo "❌ ไม่พบกิ่งชื่อ '$TARGET' ในระบบ GitHub (ตรวจสอบตัวสะกดอีกครั้ง)"
+            exit 1
+          fi
+
+      - name: "4. ลงมือลบกิ่ง (Action)"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TARGET="${{ github.event.inputs.target_branch }}"
+          echo "กำลังลบกิ่ง $TARGET ออกจาก GitHub..."
+          gh api -X DELETE /repos/${{ github.repository }}/git/refs/heads/$TARGET
+          echo "สำเร็จ! กิ่ง $TARGET ถูกกำจัดเรียบร้อย"
