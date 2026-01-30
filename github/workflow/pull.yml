@@ -15,8 +15,34 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
-# ขั้นตอนที่ 2: สั่ง Merge และลบ Branch ทิ้งทันที 🗑️
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
+
+      # ขั้นตอนที่ 1: สร้าง PR
+      - name: Create Pull Request
+        id: cpr_step
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: ${{ github.ref_name }}
+          destination_branch: "main"
+          pr_title: "PR: รวมงานจากเครื่องของคุณ"
+          pr_body: "สร้างและรวมร่างอัตโนมัติโดย GitHub Action"
+          github_token: ${{ secrets.GITHUB_TOKEN }}          
+
+      # ขั้นตอนตรวจสอบ: เช็คว่ามีของใหม่ไหม?
+      - name: Check for changes
+        run: |
+          if [ -z "${{ steps.cpr_step.outputs.pr_number }}" ]; then
+            echo "⚠️ ไม่พบการเปลี่ยนแปลง (ไฟล์ซ้ำกัน)"
+            echo "จะไม่มีการ Merge เกิดขึ้น"
+          else
+            echo "✅ พบของใหม่! สร้าง PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }} แล้ว"
+          fi
+
+      # ขั้นตอนที่ 2: สั่ง Merge และลบ Branch ทิ้งทันที 🗑️
       - name: Merge Pull Request
         if: ${{ steps.cpr_step.outputs.pr_number }}
         env:
@@ -25,4 +51,4 @@ jobs:
           echo "กำลังทำการ Merge PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }}..."
           
           # เพิ่ม --delete-branch ต่อท้าย เพื่อสั่งให้ลบกิ่ง oil บน GitHub ทิ้งเมื่อเสร็จงาน
-          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto
+          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto --delete-branch
