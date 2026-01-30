@@ -1,8 +1,8 @@
 name: Auto Create Pull Request
 on:
   push:
-    branches:
-      - 'lion'
+    branches-ignore:
+      - main
   
 jobs:
   create-pull-request:
