@@ -1,0 +1,34 @@
+name: "Robot: Auto Delete Branch"
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  auto-delete-branch:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
+
+      - name: "2. สั่งลบ branch อัตโนมัติ"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TARGET="${{ github.event.pull_request.head.ref }}"
+          echo "PR ถูก Merge แล้ว! กำลังเตรียมลบ branch: $TARGET"
+          
+          # ป้องกันไม่ให้ลบกิ่งหลัก (เผื่อไว้)
+          if [ "$TARGET" == "main" ] || [ "$TARGET" == "develop" ]; then
+            echo "ไม่สามารถลบกิ่งหลักได้"
+            exit 0
+          fi
+          echo "target_branch=$TARGET" >> $GITHUB_ENV
+
+          gh api -X DELETE "/repos/${{ github.repository }}/git/refs/heads/$TARGET"
