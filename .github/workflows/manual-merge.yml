@@ -26,6 +26,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: แสดงข้อมูลคำสั่ง
         run: |
           echo "🔧 กำลังจะ merge PR #${{ github.event.inputs.pr_number }}"
@@ -37,4 +40,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr merge ${{ github.event.inputs.pr_number }} \
-            --${{ github.event.inputs.merge_method }}
+            --${{ github.event.inputs.merge_method }} \
+            --delete-branch
