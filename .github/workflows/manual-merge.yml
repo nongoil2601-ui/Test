@@ -40,4 +40,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr merge ${{ github.event.inputs.pr_number }} \
-            --${{ github.event.inputs.merge_method }}
+            --${{ github.event.inputs.merge_method }} \
+            --delete-branch
