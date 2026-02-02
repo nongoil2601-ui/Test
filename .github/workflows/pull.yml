@@ -43,13 +43,9 @@ jobs:
             echo "✅ พบของใหม่! สร้าง PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }} แล้ว"
           fi
 
-      # ขั้นตอนที่ 2: สั่ง Merge และลบ Branch ทิ้งทันที 🗑️
-      - name: Merge Pull Request
-        if: ${{ steps.cpr_step.outputs.pr_number }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Show PR number for manual merge
+        if: steps.cpr_step.outputs.pr_number
         run: |
-          echo "กำลังทำการ Merge PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }}..."
-          
-          # เพิ่ม --delete-branch ต่อท้าย เพื่อสั่งให้ลบกิ่ง oil บน GitHub ทิ้งเมื่อเสร็จงาน
-          gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto --delete-branch
+          echo "📌 PR ถูกสร้างแล้ว"
+          echo "➡️ PR Number: ${{ steps.cpr_step.outputs.pr_number }}"
+          echo "👉 ใช้เลขนี้ไปกด Manual Merge Workflow"
