@@ -16,6 +16,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      # 🔍 เช็คว่า branch ต้นทางยังมีอยู่จริงไหม
+      - name: Check if source branch exists
+        id: check_branch
+        run: |
+          if git show-ref --verify --quiet refs/remotes/origin/${{ github.ref_name }}; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Branch ยังอยู่: ${{ github.ref_name }}"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Branch ถูกลบไปแล้ว → ข้ามการสร้าง PR"
+          fi
 
       # ขั้นตอนที่ 1: สร้าง PR
       - name: Create Pull Request
@@ -40,7 +51,7 @@ jobs:
 
       # ขั้นตอนที่ 2: สั่ง Merge และลบ Branch ทิ้งทันที 🗑️
       - name: Merge Pull Request
-        if: ${{ steps.cpr_step.outputs.pr_number }}
+        if: steps.check_branch.outputs.exists == 'true' && steps.cpr_step.outputs.pr_number
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
