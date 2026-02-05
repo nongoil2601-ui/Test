@@ -30,11 +30,8 @@ jobs:
           source_branch: ${{ github.ref_name }}
           destination_branch: "main"
           pr_title: "PR: รวมงานจากเครื่องของคุณ"
-          pr_body: |
-            สร้างและรวมร่างอัตโนมัติโดย GitHub Action
-            closes #${{ github.ref_name }}  
-          github_token: ${{ secrets.GITHUB_TOKEN }}  
-          # closes #${{ github.ref_name }}  เพิ่มมาเพื่อรับ issue         
+          pr_body: สร้างและรวมร่างอัตโนมัติโดย GitHub Action 
+          github_token: ${{ secrets.GITHUB_TOKEN }}       
 
       # ขั้นตอนตรวจสอบ: เช็คว่ามีของใหม่ไหม?
       - name: Check for changes
