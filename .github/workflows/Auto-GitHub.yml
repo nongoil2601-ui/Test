@@ -8,9 +8,9 @@ jobs:
   move-to-done:
     runs-on: ubuntu-latest
     env:
-      GITHUB_TOKEN: ${{ secrets.SECRET_PAT }}
-      PROJECT_OWNER: My
-      PROJECT_NUMBER: 1
+      GH_TOKEN: ${{ secrets.SECRET_PAT }}
+      PROJECT_OWNER: oil
+      PROJECT_NUMBER: 4
       ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - name: Move issue to Done
