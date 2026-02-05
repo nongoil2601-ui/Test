@@ -40,15 +40,26 @@ jobs:
           sudo apt update
           sudo apt install gh -y
 
-      - name: Merge Pull Request (Manual)
+      - name: Merge PR
         env:
           GH_TOKEN: ${{ secrets.SECRET_PAT }}
         run: |
-          ISSUE_NUMBER=$(gh pr view ${{ github.event.inputs.pr_number }} --repo ${{ github.repository }} --json title -q '.title' | grep -oE '[0-9]+')
+          TITLE=$(gh pr view ${{ github.event.inputs.pr_number }} \
+            --repo ${{ github.repository }} \
+            --json title -q '.title')
+
+          ISSUE_NUMBER=$(echo "$TITLE" | grep -oE '[0-9]+' || true)
+
+          echo "PR title: $TITLE"
+          echo "Issue: $ISSUE_NUMBER"
 
           if [ -z "$ISSUE_NUMBER" ]; then
-            echo "❌ ไม่พบเลข issue"
+            echo "❌ PR title ไม่มีเลข issue"
             exit 1
           fi
 
-          gh pr merge ${{ github.event.inputs.pr_number }} --repo ${{ github.repository }} --${{ github.event.inputs.merge_method }} --delete-branch --body "closes #$ISSUE_NUMBER"
+          gh pr merge ${{ github.event.inputs.pr_number }} \
+            --repo ${{ github.repository }} \
+            --${{ github.event.inputs.merge_method }} \
+            --delete-branch \
+            --body "closes #$ISSUE_NUMBER"
