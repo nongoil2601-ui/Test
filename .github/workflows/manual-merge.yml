@@ -35,6 +35,11 @@ jobs:
           echo "➡️ วิธี merge: ${{ github.event.inputs.merge_method }}"
           echo "👤 สั่งโดย: ${{ github.actor }}"
 
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
+
       - name: Merge Pull Request (Manual)
         env:
           GH_TOKEN: ${{ secrets.SECRET_PAT }}
