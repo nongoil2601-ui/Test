@@ -35,6 +35,17 @@ jobs:
           echo "➡️ วิธี merge: ${{ github.event.inputs.merge_method }}"
           echo "👤 สั่งโดย: ${{ github.actor }}"
 
+      - name: Add close issue keyword to PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ github.event.inputs.pr_number }}
+          BODY=$(gh pr view $PR_NUM --json body -q .body)
+
+          gh pr edit $PR_NUM --body "$BODY
+
+closes #$PR_NUM"
+
       - name: Merge Pull Request (Manual)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
