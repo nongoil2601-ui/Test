@@ -21,7 +21,7 @@ jobs:
         id: cpr_step
         uses: repo-sync/pull-request@v2
         with:
-          source_branch: ${{ github.ref_name }}
+          source_branch: "${{ github.ref_name }}"
           destination_branch: "main"
           pr_title: "PR: รวมงานจากเครื่องของคุณ #${{ github.ref_name }}"
           pr_body: |
