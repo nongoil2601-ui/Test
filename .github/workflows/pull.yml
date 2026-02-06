@@ -24,19 +24,21 @@ jobs:
           sudo apt update
           sudo apt install gh -y
 
-      - name: Extract Issue Number from Branch
+      # [แก้ไขใหม่] แกะแค่ตัวเลขออกมาอย่างเดียว (Clean & Clear)
+      - name: Extract Issue Number
         id: extract
         run: |
           BRANCH_NAME="${{ github.ref_name }}"
+          # หาตัวเลขในชื่อ Branch
           ISSUE_NUM=$(echo "$BRANCH_NAME" | grep -oE '[0-9]+' | head -n 1)
-
-          if [ -z "$ISSUE_NUM" ]; then
-            echo "❌ ไม่พบเลข Issue ในชื่อ branch"
-            exit 1
+          
+          if [ -n "$ISSUE_NUM" ]; then
+            echo "NUM=$ISSUE_NUM" >> $GITHUB_OUTPUT
+            echo "✅ เจอเลข Issue: $ISSUE_NUM"
+          else
+            echo "NUM=" >> $GITHUB_OUTPUT
+            echo "⚠️ ไม่เจอเลข Issue"
           fi
-
-          echo "NUM=$ISSUE_NUM" >> $GITHUB_OUTPUT
-          echo "✅ เจอเลข Issue: $ISSUE_NUM"
 
       # ขั้นตอนที่ 1: สร้าง PR
       - name: Create Pull Request
