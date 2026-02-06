@@ -21,11 +21,10 @@ jobs:
         id: cpr_step
         uses: repo-sync/pull-request@v2
         with:
-          source_branch: "${{ github.ref_name }}"
+          source_branch: ${{ github.ref_name }}
           destination_branch: "main"
           pr_title: "PR: รวมงานจากเครื่องของคุณ #${{ github.ref_name }}"
           pr_body: |
-            # ใส่คำว่า closes # แล้วตามด้วยชื่อกิ่ง (ซึ่งเราจะตั้งเป็นตัวเลข)
             สร้างและรวมร่างอัตโนมัติโดย GitHub Action 
             closes #${{ github.ref_name }}
           github_token: ${{ secrets.GITHUB_TOKEN }}       
