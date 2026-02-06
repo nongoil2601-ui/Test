@@ -1,4 +1,4 @@
-name: "Robot: Manual Merge Pull Request"
+name: "Robot: Manual Merge Pull Request test"
 
 on:
   workflow_dispatch:
