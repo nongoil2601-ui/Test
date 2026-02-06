@@ -1,4 +1,4 @@
-name: Auto Create Pull Request
+name: Auto Create Pull Request and Merge PR
 on:
   push:
     branches-ignore:
@@ -10,17 +10,11 @@ jobs:
     permissions: 
       contents: write
       pull-requests: write
-      statuses: write
+    outputs:
+      pr_number: ${{ steps.cpr_step.outputs.pr_number }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install GitHub CLI
-        run: |
-          sudo apt update
-          sudo apt install gh -y
 
       # ขั้นตอนที่ 1: สร้าง PR
       - name: Create Pull Request
@@ -29,8 +23,9 @@ jobs:
         with:
           source_branch: ${{ github.ref_name }}
           destination_branch: "main"
-          pr_title: "PR: รวมงานจากเครื่องของคุณ (#${{ github.ref_name }})"
+          pr_title: "PR: รวมงานจากเครื่องของคุณ #${{ github.ref_name }}"
           pr_body: |
+    # ใส่คำว่า closes # แล้วตามด้วยชื่อกิ่ง (ซึ่งเราจะตั้งเป็นตัวเลข)
             สร้างและรวมร่างอัตโนมัติโดย GitHub Action 
             closes #${{ github.ref_name }}
           github_token: ${{ secrets.GITHUB_TOKEN }}       
