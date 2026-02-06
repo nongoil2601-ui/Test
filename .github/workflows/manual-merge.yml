@@ -1,48 +1,60 @@
-name: "Robot: Manual Merge Pull Request test"
+name: Auto Create Pull Request and Link Issue
 
 on:
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: 'ระบุหมายเลข Pull Request (เช่น 12)'
-        required: true
-        type: number
-
-      merge_method:
-        description: 'วิธี merge'
-        required: true
-        type: choice
-        options:
-          - squash
-          - merge
-          - rebase
+  push:
+    branches-ignore:
+      - main
 
 permissions:
-  pull-requests: write
   contents: write
+  pull-requests: write
 
 jobs:
-  manual-merge:
+  create-pull-request:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install GitHub CLI
         run: |
           sudo apt update
           sudo apt install gh -y
 
-      - name: แสดงข้อมูลคำสั่ง
+      - name: Extract Issue Number from Branch
+        id: extract
         run: |
-          echo "🔧 กำลังจะ merge PR #${{ github.event.inputs.pr_number }}"
-          echo "➡️ วิธี merge: ${{ github.event.inputs.merge_method }}"
-          echo "👤 สั่งโดย: ${{ github.actor }}"
+          BRANCH_NAME="${{ github.ref_name }}"
+          ISSUE_NUM=$(echo "$BRANCH_NAME" | grep -oE '[0-9]+' | head -n 1)
 
-      - name: Merge Pull Request (Manual)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          if [ -z "$ISSUE_NUM" ]; then
+            echo "❌ ไม่พบเลข Issue ในชื่อ branch"
+            exit 1
+          fi
+
+          echo "NUM=$ISSUE_NUM" >> $GITHUB_OUTPUT
+          echo "✅ เจอเลข Issue: $ISSUE_NUM"
+
+      - name: Create Pull Request
+        id: cpr_step
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: ${{ github.ref_name }}
+          destination_branch: main
+          pr_title: "PR: รวมงานจากเครื่องของคุณ #${{ steps.extract.outputs.NUM }}"
+          pr_body: |
+            สร้างอัตโนมัติโดย GitHub Action
+
+            closes #${{ steps.extract.outputs.NUM }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Result
         run: |
-          gh pr merge ${{ github.event.inputs.pr_number }} \
-            --${{ github.event.inputs.merge_method }}
+          if [ -z "${{ steps.cpr_step.outputs.pr_number }}" ]; then
+            echo "⚠️ ไม่มีการสร้าง PR (อาจไม่มี diff)"
+          else
+            echo "✅ สร้าง PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }}"
+          fi
