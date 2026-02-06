@@ -36,10 +36,6 @@ jobs:
             สร้างและรวมร่างอัตโนมัติโดย GitHub Action 
             closes #${{ github.ref_name }}
           github_token: ${{ secrets.GITHUB_TOKEN }}  
-
-      - name: Show PR number
-        if: ${{ steps.cpr_step.outputs.pr_number != '' }}
-        run: echo "👉 PR ที่ถูกสร้างคือ #${{ steps.cpr_step.outputs.pr_number }}"
      
       # ขั้นตอนตรวจสอบ: เช็คว่ามีของใหม่ไหม?
       - name: Check for changes
