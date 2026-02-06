@@ -1,0 +1,119 @@
+name: Auto Create Pull Request and Merge PR
+
+on:
+  push:
+    branches-ignore:
+      - 'main'
+
+jobs:
+  # Job 1: สร้าง PR และ Merge 
+  create-and-merge:
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: write
+      pull-requests: write
+    outputs:
+      pr_number: ${{ steps.cpr_step.outputs.pr_number }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Pull Request
+        id: cpr_step
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: "${{ github.ref_name }}" # ดึงชื่อ Branch มาใช้
+          destination_branch: "main"
+          pr_title: "PR: พัฒนาฟีเจอร์สำหรับ Issue #${{ github.ref_name }}"
+          # ใส่คำว่า closes # แล้วตามด้วยชื่อกิ่ง (ซึ่งเราจะตั้งเป็นตัวเลข)
+          pr_body: |
+            closes #${{ github.ref_name }}
+            สร้างและรวมร่างอัตโนมัติโดย GitHub Action
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Create Pull Request
+      #   id: cpr_step
+      #   uses: repo-sync/pull-request@v2
+      #   with:
+      #     source_branch: "${{ github.ref_name }}"
+      #     destination_branch: "main"
+      #     pr_title: "PR: รวมงานอัตโนมัติ"
+      #     pr_body: "สร้างและรวมร่างอัตโนมัติโดย GitHub Action"
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ขั้นตอนตรวจสอบ: เช็คว่ามีของใหม่ไหม?
+      - name: Check for changes
+        run: |
+          if [ -z "${{ steps.cpr_step.outputs.pr_number }}" ]; then
+            echo "⚠️ ไม่พบการเปลี่ยนแปลง (ไฟล์ซ้ำกัน)"
+            echo "จะไม่มีการ Merge เกิดขึ้น"
+          else
+            echo "✅ พบของใหม่! สร้าง PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }} แล้ว"
+          fi
+
+      # สั่ง Merge ทันที 
+      # - name: Merge Pull Request
+      #   # บรรทัดนี้คือหัวใจสำคัญ! 
+      #   # "ถ้า steps.cpr_step มีเลข PR ส่งมา (แปลว่าไม่ซ้ำ) -> ให้ทำ"
+      #   # "ถ้าไม่มีเลขส่งมา (แปลว่าซ้ำ) -> ให้ข้ามขั้นตอนนี้ไปเลย"
+      #   if: ${{ steps.cpr_step.outputs.pr_number }}
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     echo "รอสักครู่เพื่อให้ GitHub ตรวจสอบสถานะ PR..."
+      #     sleep 7
+      #     echo "กำลังทำการ Merge PR หมายเลข ${{ steps.cpr_step.outputs.pr_number }}..."
+      #     # ใช้คำสั่ง gh (GitHub CLI) เพื่อทำการ Merge เข้ากิ่ง main
+      #     gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto
+
+  # Job 2: เช็คสถานะ Project (ใช้ echo)
+  # update_project_status:
+  #   needs: create-and-merge
+  #   if: success()
+  #   runs-on: ubuntu-latest
+  #   steps:  
+  #     - name: Check Project Status and Echo
+  #       env:
+  #         # เปลี่ยนจาก GITHUB_TOKEN เป็นชื่อ Secret ใหม่ที่เราสร้าง
+  #         GH_TOKEN: ${{ secrets.MY_PROJECT_TOKEN }} 
+  #         PROJECT_NUMBER: 5
+  #       run: |
+  #         # ดึงเลข Issue จาก Job ก่อนหน้ามาใช้ (ตรวจสอบว่าเลขตรงกันไหม)
+  #         ISSUE_NUM=${{ needs.create-and-merge.outputs.pr_number }}
+  #         echo "กำลังเช็คสถานะของ Issue #$ISSUE_NUM ใน Project หมายเลข $PROJECT_NUMBER..."
+
+  #         # ใช้คำสั่งเดิม แต่ระบุ --user ให้ชัดเจนว่าเป็นโปรเจกต์ส่วนตัว
+  #         STATUS=$(gh project item-list $PROJECT_NUMBER --user "ing1403" --format json \
+  #           | jq -r ".items[] | select(.content.number == $ISSUE_NUM) | .status")
+
+  #         if [ -z "$STATUS" ] || [ "$STATUS" == "null" ]; then
+  #           echo "ไม่พบข้อมูลงานนี้ใน Project Board"
+  #         else
+  #           echo "สถานะปัจจุบันของ Issue #$ISSUE_NUM คือ [ $STATUS ]"
+  #         fi
+
+  # Job 3: โทรหาไฟล์ลบ Branch
+  # เหมือนให้ไฟล์นี้สามารถโทรหา auto delete
+  # call-delete-job:
+  #   needs: update_project_status # ให้รออัปเดตสถานะเสร็จก่อนค่อยลบ
+  #   if: success()
+  #   uses: ./.github/workflows/auto-delete.yml
+  #   secrets: inherit
+
+
+
+  #ถ้าอยากให้ เป็น auto 100% ต้องแก้ โค้ดส่วน merge ด้วย
+      # - name: Merge Pull Request
+      #   if: ${{ steps.cpr_step.outputs.pr_number }}
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     # 1. สั่ง Merge
+      #     gh pr merge ${{ steps.cpr_step.outputs.pr_number }} --merge --auto
+          
+      #     # 2. รอระบบแป๊บนึง
+      #     sleep 5
+          
+      #     # 3. สั่งปิด Issue ด้วยมือบอท (เพื่อให้การ์ดวาร์ปไป Done)
+      #     # เราใช้ชื่อ branch (github.ref_name) ซึ่งก็คือเลข Issue มาสั่งปิด
+      #     gh issue close ${{ github.ref_name }} --repository ${{ github.repository }}
