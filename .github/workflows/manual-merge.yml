@@ -44,7 +44,7 @@ jobs:
 
           gh pr edit $PR_NUM --body "$BODY
 
-closes #$PR_NUM"
+          closes #$PR_NUM"
 
       - name: Merge Pull Request (Manual)
         env:
