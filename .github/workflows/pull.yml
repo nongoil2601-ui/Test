@@ -42,7 +42,6 @@ jobs:
 
       # ขั้นตอนที่ 1: สร้าง PR
       - name: Create Pull Request
-        id: cpr_step
         uses: repo-sync/pull-request@v2
         with:
           source_branch: ${{ github.ref_name }}
