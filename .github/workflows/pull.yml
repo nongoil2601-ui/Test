@@ -10,11 +10,19 @@ jobs:
     permissions: 
       contents: write
       pull-requests: write
+      statuses: write
     outputs:
       pr_number: ${{ steps.cpr_step.outputs.pr_number }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
 
       # ขั้นตอนที่ 1: สร้าง PR
       - name: Create Pull Request
@@ -27,8 +35,12 @@ jobs:
           pr_body: |
             สร้างและรวมร่างอัตโนมัติโดย GitHub Action 
             closes #${{ github.ref_name }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}       
+          github_token: ${{ secrets.GITHUB_TOKEN }}  
 
+      - name: Show PR number
+        if: ${{ steps.cpr_step.outputs.pr_number != '' }}
+        run: echo "👉 PR ที่ถูกสร้างคือ #${{ steps.cpr_step.outputs.pr_number }}"
+     
       # ขั้นตอนตรวจสอบ: เช็คว่ามีของใหม่ไหม?
       - name: Check for changes
         run: |
