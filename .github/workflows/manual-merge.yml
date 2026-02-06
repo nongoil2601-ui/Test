@@ -40,42 +40,6 @@ jobs:
           echo "➡️ วิธี merge: ${{ github.event.inputs.merge_method }}"
           echo "👤 สั่งโดย: ${{ github.actor }}"
 
-      - name: Add close issue keyword to PR
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR_NUM=${{ github.event.inputs.pr_number }}
-
-          # 1. ดึงชื่อ branch ของ PR (เช่น l-169)
-          BRANCH=$(gh pr view "$PR_NUM" --json headRefName -q .headRefName)
-          echo "📌 PR branch: $BRANCH"
-
-          # 2. ดึง issue number จาก branch
-          ISSUE_NUM=$(echo "$BRANCH" | grep -oE '[0-9]+' | head -n 1)
-
-          [ -z "$ISSUE_NUM" ]; then
-            echo "❌ ไม่พบ issue number ในชื่อ branch"
-            exit 1
-          fi
-
-          echo "✅ พบ issue: #$ISSUE_NUM"
-
-          # 3. ดึง PR body
-          BODY=$(gh pr view "$PR_NUM" --json body -q .body)
-
-          # 4. กันซ้ำ
-          if echo "$BODY" | grep -q "closes #$ISSUE_NUM"; then
-            echo "ℹ️ PR body มี closes #$ISSUE_NUM อยู่แล้ว"
-            exit 0
-          fi
-
-          # 5. เพิ่ม closes keyword
-          NEW_BODY="${BODY}
-
-          closes #${ISSUE_NUM}"
-
-          gh pr edit "$PR_NUM" --body "$NEW_BODY"
-
       - name: Merge Pull Request (Manual)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
