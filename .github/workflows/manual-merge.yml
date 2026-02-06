@@ -54,16 +54,11 @@ jobs:
           PR_BODY=$(gh pr view ${{ github.event.inputs.pr_number }} --json body --jq .body)
           
           # ใช้สูตรค้นหาคำว่า "Closes #เลข"
-          ISSUE_NUM=$(echo "$PR_BODY" | grep -oE 'Closes #[0-9]+' | head -n 1 | grep -oE '[0-9]+')
+          ISSUE_NUM=$(echo "$PR_BODY" | sed -n 's/.*[Cc]loses #[^0-9]*\([0-9]\+\).*/\1/p' | head -n 1)
 
           if [ -n "$ISSUE_NUM" ]; then
-            echo "✅ เจอ Issue ที่ต้องปิด คือหมายเลข #$ISSUE_NUM"
-            echo "🚀 กำลังสั่งปิด Issue..."
-            
-            # คำสั่งปิด Issue
-            gh issue close $ISSUE_NUM --comment "Auto-closed by Robot Merge 🤖"
-            
-            echo "🎉 เรียบร้อย! ปิดงานเสร็จสมบูรณ์"
+            echo "✅ เจอ Issue ที่ต้องปิด คือ #$ISSUE_NUM"
+            gh issue close "$ISSUE_NUM" --comment "Auto-closed by Robot Merge 🤖"
           else
-            echo "⚠️ ไม่พบคำสั่ง Closes #... ใน PR นี้ (ข้ามการปิด Issue)"
+            echo "⚠️ ไม่พบ Issue ที่ผูกกับ PR นี้"
           fi
