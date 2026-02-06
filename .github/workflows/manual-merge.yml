@@ -35,7 +35,7 @@ jobs:
           echo "➡️ วิธี merge: ${{ github.event.inputs.merge_method }}"
           echo "👤 สั่งโดย: ${{ github.actor }}"
 
-            - name: Add close issue keyword to PR
+      - name: Add close issue keyword to PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
