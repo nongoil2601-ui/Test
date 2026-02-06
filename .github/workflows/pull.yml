@@ -39,7 +39,9 @@ jobs:
 
       - name: Show PR number
         if: ${{ steps.cpr_step.outputs.pr_number != '' }}
-        run: echo "👉 PR ที่ถูกสร้างคือ #${{ steps.cpr_step.outputs.pr_number }}"
+        run: |
+          printf "PR ที่ถูกสร้างคือ #%s\n" "${{ steps.cpr_step.outputs.pr_number }}"
+
      
       # ขั้นตอนตรวจสอบ: เช็คว่ามีของใหม่ไหม?
       - name: Check for changes
